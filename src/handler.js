@@ -36,7 +36,7 @@ const signIn = async (request, h) => {
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
@@ -67,7 +67,7 @@ const signUp = async (request, h) => {
     console.error(e);
     return h.response({
       error: true,
-      message: 'database error',
+      message: 'server error',
     }).code(500);
   }
 };
@@ -95,7 +95,7 @@ const getAllArticles = async (request, h) => {
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
@@ -125,7 +125,7 @@ const getArticleById = async (request, h) => {
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
@@ -163,7 +163,7 @@ const addArticle = async (request, h) => {
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
@@ -204,7 +204,7 @@ const updateArticle = async (request, h) => {
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
@@ -230,10 +230,11 @@ const deleteArticle = async (request, h) => {
       })
       .code(200);
   } catch (e) {
+    console.error(e)
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
@@ -281,10 +282,11 @@ const likeArticle = async (request, h) => {
       .code(200);
   } catch (e) {
     session.abortTransaction();
+    console.error(e)
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   } finally {
@@ -315,10 +317,11 @@ const addComment = async (request, h) => {
       })
       .code(200);
   } catch (e) {
+    console.error(e)
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
@@ -366,10 +369,11 @@ const likeComment = async (request, h) => {
       .code(200);
   } catch (e) {
     session.abortTransaction();
+    console.error(e)
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   } finally {
@@ -419,10 +423,11 @@ const dislikeComment = async (request, h) => {
       .code(200);
   } catch (e) {
     session.abortTransaction();
+    console.error(e)
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   } finally {
@@ -435,17 +440,23 @@ const smallImage = async (request, h) => {
     const {id} = request.params
     const image = await Images.findById(id, 'small')
     if (!image) {
-      return h.code(404)
+      return h
+        .response({
+          error:true,
+          message: 'image not found'
+        })
+        .code(404)
     }
     return h
       .response(image.small)
       .type('image/jpeg')
       .code(200)
   } catch(e) {
+    console.error(e)
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
@@ -456,17 +467,23 @@ const largeImage = async (request, h) => {
     const {id} = request.params
     const image = await Images.findById(id, 'large')
     if (!image) {
-      return h.code(404)
+      return h
+        .response({
+          error:true,
+          message: 'image not found'
+        })
+        .code(404)
     }
     return h
       .response(image.large)
       .type('image/jpeg')
       .code(200)
   } catch(e) {
+    console.error(e)
     return h
       .response({
         error: true,
-        message: 'database error',
+        message: 'server error',
       })
       .code(500);
   }
