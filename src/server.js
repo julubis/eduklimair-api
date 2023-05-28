@@ -1,7 +1,11 @@
-const Hapi = require('@hapi/hapi');
-const connectDB = require('./database');
-const routes = require('./routes');
 require('dotenv').config();
+const Hapi = require('@hapi/hapi');
+const Inert = require('@hapi/inert');
+const JWT = require('@hapi/jwt');
+
+const routes = require('./routes');
+const connectDB = require('./database');
+const { verifyAdmin, verifyUser } = require('./auth');
 
 const init = async () => {
   const server = Hapi.server({
@@ -13,6 +17,11 @@ const init = async () => {
       },
     },
   });
+
+  await server.register([Inert, JWT]);
+
+  server.auth.strategy('user', 'jwt', verifyUser);
+  server.auth.strategy('admin', 'jwt', verifyAdmin);
 
   server.route(routes);
   await connectDB();
