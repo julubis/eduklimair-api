@@ -20,15 +20,14 @@ const user = new mongoose.Schema({
     required: true,
   },
   registeredAt: {
-    type: String,
-    default: new Date().toISOString(),
+    type: Date,
+    default: Date.now,
   },
 }, {
   toJSON: {
     virtuals: true,
     versionKey: false,
   },
-  _id: false,
 });
 
 const comment = new mongoose.Schema({
@@ -45,8 +44,8 @@ const comment = new mongoose.Schema({
     required: true,
   },
   date: {
-    type: String,
-    default: new Date().toISOString(),
+    type: Date,
+    default: Date.now,
   },
   like: {
     type: Array,
@@ -59,7 +58,6 @@ const comment = new mongoose.Schema({
     virtuals: true,
     versionKey: false,
   },
-  _id: false,
 });
 
 const article = new mongoose.Schema({
@@ -76,8 +74,8 @@ const article = new mongoose.Schema({
     required: true,
   },
   date: {
-    type: String,
-    default: new Date().toISOString(),
+    type: Date,
+    default: Date.now,
   },
   imageId: {
     type: String,
@@ -95,7 +93,6 @@ const article = new mongoose.Schema({
     virtuals: true,
     versionKey: false,
   },
-  _id: false,
 });
 
 const image = new mongoose.Schema({
@@ -112,7 +109,6 @@ const image = new mongoose.Schema({
     virtuals: true,
     versionKey: false,
   },
-  _id: false,
 });
 
 const User = mongoose.model('user', user);

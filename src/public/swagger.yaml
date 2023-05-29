@@ -1,0 +1,390 @@
+openapi: '3.0.0'
+servers:
+  - description: Production
+    url: https://eduklimair-api.cyclic.app
+  - description: Development
+    url: http://localhost:9000
+info:
+  description: This is a simple API
+  version: "1.0.0"
+  title: Eduklimair API
+tags:
+  - name: Article
+  - name: Comment
+  - name: Auth
+  - name: Image
+
+paths:
+  /articles:
+    get:
+      tags:
+        - Article
+      summary: Get all article
+      operationId: searchInventory
+      parameters:
+        - in: query
+          name: title
+          description: All article with the same title. 
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: category
+          description: All article with the same category.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - water
+                - climate
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    default: false
+                  data:
+                    type: object
+                    properties:
+                      articles:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id: 
+                              type: string
+                            title:
+                              type: string
+                            category:
+                              type: string
+                            imageId:
+                              type: string
+                            content: 
+                              type: string
+                  message:
+                    type: string
+    
+    post:
+      tags:
+        - Article
+      summary: Add new article
+      operationId: searchInventory
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - image
+                - source
+                - content
+                - category
+              properties:
+                title:
+                  type: string
+                image:
+                  type: string
+                  format: binary
+                source:
+                  type: string
+                content:
+                  type: string
+                  format: textarea
+                category:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - water
+                      - climate
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    default: false
+                  data:
+                    type: object
+                    properties:
+                      article:
+                        type: object
+                        properties:
+                          id: 
+                            type: string
+                          title:
+                            type: string
+                          category:
+                            type: string
+                          imageId:
+                            type: string
+                          content: 
+                            type: string
+                          date:
+                            type: string
+                            format: date
+                          like: 
+                            type: integer
+                          isLike:
+                            type: boolean
+                            default: false
+                  message:
+                    type: string
+
+  '/articles/{id}':
+    get:
+      tags:
+        - Article
+      summary: Get details article by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of article
+          schema: 
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type:
+    put:
+      tags:
+        - Article
+      summary: Update article by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of article
+          schema: 
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type:
+    delete:
+      tags:
+        - Article
+      summary: Delete article by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of article
+          schema: 
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type:
+
+  '/articles/{id}/like':
+    post:
+      tags:
+        - Article
+      summary: Like article by ID
+      operationId: searchInventory
+      security:
+        - bearerAuth: []
+
+  /comments:
+    post:
+      tags:
+        - Comment
+      security:
+        - bearerAuth: []
+
+  '/comments/{id}/like':
+    post:
+      tags:
+        - Comment
+      security:
+        - bearerAuth: []
+
+  '/comments/{id}/dislike':
+    post:
+      tags:
+        - Comment
+      security:
+        - bearerAuth: []
+ 
+  /users:
+    get:
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/InventoryItem'
+        '400':
+          description: bad input parameter
+
+  /users/signin:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/InventoryItem'
+        '400':
+          description: bad input parameter
+
+  /users/signup:
+    post:
+      tags:
+        - Auth
+
+  '/images/small/{id}':
+    get:
+      tags:
+        - Image
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of image
+          schema: 
+            type: string
+      responses:
+        '200':
+          content:
+            image/jpeg:
+              type: string
+              format: binary
+
+  '/images/large/{id}':
+    get:
+      tags:
+        - Image
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of image
+          schema: 
+            type: string   
+      responses:
+        '200':
+          content:
+            image/jpeg:
+              type: string
+              format: binary
+
+components:
+  schemas:
+    Article:
+      type: object
+      required:
+        - id
+        - title
+        - content
+        - imageId
+        - source
+        - category
+        - date
+        - isLiked
+        - comments
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        imageId:
+          type: string
+        source:
+          type: string
+        category:
+          type: string
+          default: water
+        comments:
+          // type: array
+          $ref: '#/components/schemas/Comment'
+    Comment:
+      required:
+        - username
+        - text
+      properties:
+        username:
+          type: string
+        text:
+          type: string
+        timestamp:
+          type: string
+          example: 408-867-5309
+      type: object
+
+    User:
+      required:
+        - name
+        - username
+        - email
+        - password
+      properties:
+        name:
+          type: string
+        username:
+          type: string
+          unique: true
+        email:
+          type: string
+          format: email
+          unique: true
+        password:
+          type: string
+          min: 8
+          max: 15
+
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

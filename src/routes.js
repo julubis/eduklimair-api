@@ -83,7 +83,17 @@ const routes = [
         parse: true,
         multipart: true,
         allow: 'multipart/form-data',
-        uploads: './uploads',
+      },
+      validate: {
+        // payload: Joi.object({
+        //   title: Joi.string().required(),
+          // image: Joi.object({
+          //   data: Joi.binary().required(),
+          //   mimeType: Joi.string().valid('image/jpeg', 'image.png')
+          // }),
+        //   source: Joi.string().required(),
+        //   content: Joi.string().required(),
+        // }),
       },
     },
   },

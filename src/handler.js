@@ -77,16 +77,24 @@ const getAllArticles = async (request, h) => {
     const { title, category } = request.query;
     const query = {};
     if (title) {
-      query.title = { title: { $regex: title, $options: 'i' } };
+      query.title = { $regex: title, $options: 'i' };
     }
     if (category) {
       query.category = category;
     }
-    const articles = await Article.find(query);
+    const articles = await Article.find(query, {
+      title: 1,
+      content: {
+        $substr: ['$content', 0, 100],
+      },
+      category: 1,
+      imageId: 1,
+      _id: -1,
+    });
     return h
       .response({
         error: false,
-        data: articles,
+        data: { articles },
         message: 'success',
       })
       .code(200);
@@ -104,6 +112,7 @@ const getAllArticles = async (request, h) => {
 const getArticleById = async (request, h) => {
   try {
     const { id } = request.params;
+    const decoded = JWT.decode(request.header.authorization.split(' ')[1]);
     const article = await Article.findById(id);
     if (!article) {
       return h
@@ -113,6 +122,11 @@ const getArticleById = async (request, h) => {
         })
         .code(404);
     }
+    article.isLiked = false;
+    if (article.like.includes(decoded.username)) {
+      article.isLiked = true;
+    }
+    article.like = article.like.length;
     return h
       .response({
         error: false,
@@ -137,24 +151,28 @@ const addArticle = async (request, h) => {
       title, image, source, content, category,
     } = request.payload;
 
-    const small = await sharp(image.hapi.path)
+    const small = await sharp(image._data)
       .resize(480)
-      .jpeg({})
+      .png({ quality: 100 })
       .toBuffer();
-    const large = await sharp(image.hapi.path)
+    const large = await sharp(image._data)
       .resize(800)
-      .jpeg({})
+      .png({ quality: 100 })
       .toBuffer();
     const images = new Images({ small, large });
     const { id } = await images.save();
-
-    const newArticle = new Article({title, source, content, category, imageId: id})
-    const article = await newArticle.save()
+    const newArticle = new Article({
+      title, source, content, category, imageId: id,
+    });
+    const article = await newArticle.save();
+    delete article._id;
+    article.like = 0;
+    article.isLiked = false;
 
     return h
       .response({
         error: false,
-        data: {article},
+        data: { article },
         message: 'success add article',
       })
       .code(200);
@@ -171,31 +189,33 @@ const addArticle = async (request, h) => {
 
 const updateArticle = async (request, h) => {
   try {
-    const { id } = request.params
+    const { id } = request.params;
     const {
       title, image, source, content, category,
     } = request.payload;
 
-    let imageId
+    let imageId;
     if (image) {
       const small = await sharp(image.hapi.path)
         .resize(480)
-        .jpeg({})
+        .png({ quality: 100 })
         .toBuffer();
       const large = await sharp(image.hapi.path)
         .resize(800)
-        .jpeg({})
+        .png({ quality: 100 })
         .toBuffer();
       const images = new Images({ small, large });
       const savedImages = await images.save();
-      imageId = savedImages.id
+      imageId = savedImages.id;
     }
 
-    const article = Article.findByIdAndUpdate(id, {title, source, content, category, imageId}, {new: true})
+    const article = Article.findByIdAndUpdate(id, {
+      title, source, content, category, imageId,
+    }, { new: true });
     return h
       .response({
         error: false,
-        data: {article},
+        data: { article },
         message: 'success update article',
       })
       .code(200);
@@ -222,7 +242,7 @@ const deleteArticle = async (request, h) => {
         })
         .code(404);
     }
-    Images.deleteOne({_id: article.imageId})
+    await Images.deleteOne({ _id: article.imageId });
     return h
       .response({
         error: false,
@@ -230,7 +250,7 @@ const deleteArticle = async (request, h) => {
       })
       .code(200);
   } catch (e) {
-    console.error(e)
+    console.error(e);
     return h
       .response({
         error: true,
@@ -282,7 +302,7 @@ const likeArticle = async (request, h) => {
       .code(200);
   } catch (e) {
     session.abortTransaction();
-    console.error(e)
+    console.error(e);
     return h
       .response({
         error: true,
@@ -297,7 +317,7 @@ const likeArticle = async (request, h) => {
 const addComment = async (request, h) => {
   try {
     const { articleId, text } = request.payload;
-    const article = await Article.findById(articleId)
+    const article = await Article.findById(articleId);
     if (!article) {
       return h
         .response({
@@ -317,7 +337,7 @@ const addComment = async (request, h) => {
       })
       .code(200);
   } catch (e) {
-    console.error(e)
+    console.error(e);
     return h
       .response({
         error: true,
@@ -369,7 +389,7 @@ const likeComment = async (request, h) => {
       .code(200);
   } catch (e) {
     session.abortTransaction();
-    console.error(e)
+    console.error(e);
     return h
       .response({
         error: true,
@@ -423,7 +443,7 @@ const dislikeComment = async (request, h) => {
       .code(200);
   } catch (e) {
     session.abortTransaction();
-    console.error(e)
+    console.error(e);
     return h
       .response({
         error: true,
@@ -437,22 +457,22 @@ const dislikeComment = async (request, h) => {
 
 const smallImage = async (request, h) => {
   try {
-    const {id} = request.params
-    const image = await Images.findById(id, 'small')
+    const { id } = request.params;
+    const image = await Images.findById(id, 'small');
     if (!image) {
       return h
         .response({
-          error:true,
-          message: 'image not found'
+          error: true,
+          message: 'image not found',
         })
-        .code(404)
+        .code(404);
     }
     return h
       .response(image.small)
-      .type('image/jpeg')
-      .code(200)
-  } catch(e) {
-    console.error(e)
+      .type('image/png')
+      .code(200);
+  } catch (e) {
+    console.error(e);
     return h
       .response({
         error: true,
@@ -460,26 +480,26 @@ const smallImage = async (request, h) => {
       })
       .code(500);
   }
-}
+};
 
 const largeImage = async (request, h) => {
   try {
-    const {id} = request.params
-    const image = await Images.findById(id, 'large')
+    const { id } = request.params;
+    const image = await Images.findById(id, 'large');
     if (!image) {
       return h
         .response({
-          error:true,
-          message: 'image not found'
+          error: true,
+          message: 'image not found',
         })
-        .code(404)
+        .code(404);
     }
     return h
       .response(image.large)
       .type('image/jpeg')
-      .code(200)
-  } catch(e) {
-    console.error(e)
+      .code(200);
+  } catch (e) {
+    console.error(e);
     return h
       .response({
         error: true,
@@ -487,7 +507,7 @@ const largeImage = async (request, h) => {
       })
       .code(500);
   }
-}
+};
 module.exports = {
   signIn,
   signUp,
@@ -501,5 +521,5 @@ module.exports = {
   likeComment,
   dislikeComment,
   smallImage,
-  largeImage
+  largeImage,
 };
