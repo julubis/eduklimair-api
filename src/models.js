@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 const mongoose = require('mongoose');
 
 const user = new mongoose.Schema({
@@ -19,6 +20,9 @@ const user = new mongoose.Schema({
     type: String,
     required: true,
   },
+  imageId: { 
+    type: String,
+  },
   registeredAt: {
     type: Date,
     default: Date.now,
@@ -27,6 +31,7 @@ const user = new mongoose.Schema({
   toJSON: {
     virtuals: true,
     versionKey: false,
+    transform: (doc, ret) => { delete ret._id; },
   },
 });
 
@@ -43,20 +48,18 @@ const comment = new mongoose.Schema({
     type: String,
     required: true,
   },
-  date: {
+  timestamp: {
     type: Date,
     default: Date.now,
   },
-  like: {
-    type: Array,
-  },
-  dislike: {
-    type: Array,
-  },
+  like: [String],
+  dislike: [String],
+  reply: Object,
 }, {
   toJSON: {
     virtuals: true,
     versionKey: false,
+    transform: (doc, ret) => { delete ret._id; },
   },
 });
 
@@ -65,38 +68,41 @@ const article = new mongoose.Schema({
     type: String,
     required: true,
   },
-  content: {
-    type: String,
-    required: true,
-  },
   source: {
     type: String,
     required: true,
-  },
-  date: {
-    type: Date,
-    default: Date.now,
   },
   imageId: {
     type: String,
     required: true,
   },
-  like: {
-    type: Array,
-  },
+  like: [String],
   category: {
     type: String,
-    default: 'water', // water || climate
+    required: true,
+  },
+  content: {
+    type: String,
+    required: true,
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now,
   },
 }, {
   toJSON: {
     virtuals: true,
     versionKey: false,
+    transform: (doc, ret) => { delete ret._id; },
   },
 });
 
 const image = new mongoose.Schema({
   small: {
+    type: Buffer,
+    required: true,
+  },
+  base: {
     type: Buffer,
     required: true,
   },

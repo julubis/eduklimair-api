@@ -1,5 +1,8 @@
 const Joi = require('joi');
 const {
+  getUserProfile,
+  updateUserProfile,
+  changePassword,
   signIn,
   signUp,
   getAllArticles,
@@ -11,8 +14,11 @@ const {
   addComment,
   likeComment,
   dislikeComment,
+  commentReply,
   smallImage,
+  baseImage,
   largeImage,
+  getUserPhoto
 } = require('./handler');
 
 const routes = [
@@ -35,8 +41,40 @@ const routes = [
     },
   },
   {
+    method: 'GET',
+    path: '/users/profile',
+    handler: getUserProfile,
+    options: {
+      auth: 'user'
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/users/profile',
+    handler: updateUserProfile,
+    options: {
+      auth: 'user',
+      payload: {
+        output: 'stream',
+        parse: true,
+        multipart: true,
+        allow: 'multipart/form-data',
+      },
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/users/change-password',
+    handler: changePassword,
+    options: {
+      auth: 'user'
+    }
+  },
+
+
+  {
     method: 'POST',
-    path: '/users/signin',
+    path: '/auth/signin',
     handler: signIn,
     options: {
       validate: {
@@ -49,7 +87,7 @@ const routes = [
   },
   {
     method: 'POST',
-    path: '/users/signup',
+    path: '/auth/signup',
     handler: signUp,
     options: {
       validate: {
@@ -69,7 +107,7 @@ const routes = [
   },
   {
     method: 'GET',
-    path: '/articles/{id}',
+    path: '/articles/{articleId}',
     handler: getArticleById,
   },
   {
@@ -85,29 +123,36 @@ const routes = [
         allow: 'multipart/form-data',
       },
       validate: {
-        // payload: Joi.object({
-        //   title: Joi.string().required(),
-          // image: Joi.object({
-          //   data: Joi.binary().required(),
-          //   mimeType: Joi.string().valid('image/jpeg', 'image.png')
-          // }),
-        //   source: Joi.string().required(),
-        //   content: Joi.string().required(),
-        // }),
+        payload: Joi.object({
+          title: Joi.string().required(),
+          image: Joi.object({
+            data: Joi.binary().required(),
+            mimeType: Joi.string().valid('image/jpeg', 'image.png'),
+          }),
+          source: Joi.string().required(),
+          category: Joi.string().required(),
+          content: Joi.string().required(),
+        }),
       },
     },
   },
   {
     method: 'PUT',
-    path: '/articles/{id}',
+    path: '/articles/{articleId}',
     handler: updateArticle,
     options: {
       auth: 'admin',
+      payload: {
+        output: 'stream',
+        parse: true,
+        multipart: true,
+        allow: 'multipart/form-data',
+      },
     },
   },
   {
     method: 'DELETE',
-    path: '/articles/{id}',
+    path: '/articles/{articleId}',
     handler: deleteArticle,
     options: {
       auth: 'admin',
@@ -115,7 +160,7 @@ const routes = [
   },
   {
     method: 'POST',
-    path: '/articles/{id}/like',
+    path: '/articles/{articleId}/likes',
     handler: likeArticle,
     options: {
       auth: 'user',
@@ -124,21 +169,20 @@ const routes = [
 
   {
     method: 'POST',
-    path: '/comments',
+    path: '/articles/{articleId}/comments',
     handler: addComment,
     options: {
       auth: 'user',
       validate: {
         payload: Joi.object({
-          articleId: Joi.string().required(),
-          text: Joi.string().strip().min(1).required(),
+          text: Joi.string().required(),
         }),
       },
     },
   },
   {
     method: 'POST',
-    path: '/comments/{id}/like',
+    path: '/articles/{articleId}/comments/{commentId}/likes',
     handler: likeComment,
     options: {
       auth: 'user',
@@ -146,8 +190,16 @@ const routes = [
   },
   {
     method: 'POST',
-    path: '/comments/{id}/dislike',
+    path: '/articles/{articleId}/comments/{commentId}/dislikes',
     handler: dislikeComment,
+    options: {
+      auth: 'user',
+    },
+  },
+  {
+    method: 'POST',
+    path: '/articles/{articleId}/comments/{commentId}/replies',
+    handler: commentReply,
     options: {
       auth: 'user',
     },
@@ -155,13 +207,23 @@ const routes = [
 
   {
     method: 'GET',
-    path: '/images/small/{id}',
-    handler: smallImage
+    path: '/images/small/{imageId}',
+    handler: smallImage,
   },
   {
     method: 'GET',
-    path: '/images/large/{id}',
-    handler: largeImage
+    path: '/images/base/{imageId}',
+    handler: baseImage,
+  },
+  {
+    method: 'GET',
+    path: '/images/large/{imageId}',
+    handler: largeImage,
+  },
+  {
+    method: 'GET',
+    path: '/images/profile/{username}',
+    handler: getUserPhoto,
   },
 ];
 

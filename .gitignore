@@ -9,3 +9,4 @@ package-lock.json
 Thumbs.db
 logs
 .env
+src/test.js
