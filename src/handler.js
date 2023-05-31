@@ -48,7 +48,7 @@ const signUp = async (request, h) => {
     const {
       name, username, email, password,
     } = request.payload;
-    const user = await User.findOne({ $or: { username, email } }).lean();
+    const user = await User.findOne({ $or: [{ username },{ email }] });
     if (user) {
       return h.response({
         error: true,
