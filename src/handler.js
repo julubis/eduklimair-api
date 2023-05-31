@@ -212,6 +212,7 @@ const getAllArticles = async (request, h) => {
       },
       category: 1,
       imageId: 1,
+      timestamp: 1,
     })).map((article) => article.toJSON());
 
     return h

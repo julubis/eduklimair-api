@@ -60,7 +60,6 @@ paths:
       tags:
         - Article
       summary: Add new article
-      operationId: searchInventory
       security:
         - bearerAuth: []
       requestBody:
@@ -79,12 +78,12 @@ paths:
                   type: string
                 image:
                   type: string
-                  format: binary
+                  format: base64
                 source:
                   type: string
                 content:
                   type: string
-                  format: textarea
+                  x-display: textarea
                 category:
                   type: array
                   items:

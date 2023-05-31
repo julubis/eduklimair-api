@@ -10,7 +10,7 @@ const { verifyAdmin, verifyUser } = require('./auth');
 const init = async () => {
   const server = Hapi.server({
     port: process.env.PORT || 9000,
-    host: 'localhost',
+    host: process.env.HOST || 'localhost',
     routes: {
       cors: {
         origin: ['*'],
