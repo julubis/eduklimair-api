@@ -5,7 +5,7 @@ const verifyUser = {
     iss: false,
     sub: false,
     nbf: false,
-    exp: true,
+    exp: false,
   },
   validate: () => {
     const isValid = true;
@@ -20,7 +20,7 @@ const verifyAdmin = {
     iss: false,
     sub: false,
     nbf: false,
-    exp: true,
+    exp: false,
   },
   validate: (artifacts) => {
     const isValid = artifacts.decoded.payload.email === 'admin@eduklimair.com';

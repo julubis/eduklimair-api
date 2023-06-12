@@ -83,7 +83,6 @@ paths:
                   type: string
                 content:
                   type: string
-                  x-display: textarea
                 category:
                   type: array
                   items:

@@ -20,7 +20,7 @@ const user = new mongoose.Schema({
     type: String,
     required: true,
   },
-  imageId: { 
+  imageId: {
     type: String,
   },
   registeredAt: {
@@ -29,9 +29,11 @@ const user = new mongoose.Schema({
   },
 }, {
   toJSON: {
-    virtuals: true,
     versionKey: false,
-    transform: (doc, ret) => { delete ret._id; },
+    transform: (doc, ret) => {
+      const { _id, ...rest } = ret;
+      return { id: _id, ...rest };
+    },
   },
 });
 
@@ -57,9 +59,11 @@ const comment = new mongoose.Schema({
   reply: Object,
 }, {
   toJSON: {
-    virtuals: true,
     versionKey: false,
-    transform: (doc, ret) => { delete ret._id; },
+    transform: (doc, ret) => {
+      const { _id, ...rest } = ret;
+      return { id: _id, ...rest };
+    },
   },
 });
 
@@ -91,9 +95,11 @@ const article = new mongoose.Schema({
   },
 }, {
   toJSON: {
-    virtuals: true,
     versionKey: false,
-    transform: (doc, ret) => { delete ret._id; },
+    transform: (doc, ret) => {
+      const { _id, ...rest } = ret;
+      return { id: _id, ...rest };
+    },
   },
 });
 

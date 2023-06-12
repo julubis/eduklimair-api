@@ -1,3 +1,5 @@
+/* eslint-disable no-nested-ternary */
+/* eslint-disable no-param-reassign */
 const JWT = require('@hapi/jwt');
 const sharp = require('sharp');
 const mongoose = require('mongoose');
@@ -48,7 +50,7 @@ const signUp = async (request, h) => {
     const {
       name, username, email, password,
     } = request.payload;
-    const user = await User.findOne({ $or: [{ username },{ email }] });
+    const user = await User.findOne({ $or: [{ username }, { email }] });
     if (user) {
       return h.response({
         error: true,
@@ -76,7 +78,7 @@ const signUp = async (request, h) => {
 const getUserProfile = async (request, h) => {
   try {
     const { username } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded.payload;
-    const user = (await User.findOne({ username }, {password: 0})).toJSON();
+    const user = (await User.findOne({ username }, { password: 0 })).toJSON();
     return h
       .response({
         error: false,
@@ -93,12 +95,12 @@ const getUserProfile = async (request, h) => {
       })
       .code(500);
   }
-}
+};
 const updateUserProfile = async (request, h) => {
   try {
-    const {name, photo} = request.payload;
+    const { name, photo } = request.payload;
     const { username } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded.payload;
-    
+
     let imageId;
     if (photo) {
       const base = await sharp(photo._data)
@@ -117,7 +119,8 @@ const updateUserProfile = async (request, h) => {
       imageId = savedImages.id;
     }
 
-    const user = (await User.findOneAndUpdate({username}, {name, imageId}, {password: 0})).toJSON()
+    const user = (await User.findOneAndUpdate({ username }, { name, imageId }, { password: 0 }))
+      .toJSON();
     return h
       .response({
         error: false,
@@ -134,13 +137,13 @@ const updateUserProfile = async (request, h) => {
       })
       .code(500);
   }
-}
+};
 const changePassword = async (request, h) => {
   try {
-    const {oldPassword, newPassword} = request.payload;
+    const { oldPassword, newPassword } = request.payload;
     const { username } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded.payload;
 
-    await User.findOneAndUpdate({password: oldPassword}, {password: newPassword})
+    await User.findOneAndUpdate({ username, password: oldPassword }, { password: newPassword });
     return h
       .response({
         error: false,
@@ -156,12 +159,12 @@ const changePassword = async (request, h) => {
       })
       .code(500);
   }
-}
+};
 
-const getUserPhoto = async(request, h) => {
+const getUserPhoto = async (request, h) => {
   try {
-    const {username} = request.params;
-    const user = (await User.findOne({username})).toJSON()
+    const { username } = request.params;
+    const user = (await User.findOne({ username })).toJSON();
     if (!user) {
       return h
         .response({
@@ -183,7 +186,6 @@ const getUserPhoto = async(request, h) => {
       .response(image.small)
       .type('image/png')
       .code(200);
-
   } catch (e) {
     console.error(e);
     return h
@@ -192,8 +194,8 @@ const getUserPhoto = async(request, h) => {
         message: 'server error',
       })
       .code(500);
-    }
-}
+  }
+};
 
 const getAllArticles = async (request, h) => {
   try {
@@ -246,49 +248,45 @@ const getArticleById = async (request, h) => {
         })
         .code(404);
     }
-    const listComments = await Comment.find({articleId});
-    let comments = listComments.filter(comment => !comment.reply)
+    let listComments = await Comment.find({ articleId });
+    listComments = listComments.map((comment) => {
+      comment = comment.toJSON();
+      delete comment.articleId;
+      return comment;
+    });
+    const comments = listComments.filter((comment) => !comment.reply);
 
-    let username
+    let username;
     if (authorized) {
       const { payload } = JWT.token.decode(authorized.split(' ')[1] || '').decoded;
-      username = payload.username
+      username = payload.username;
     }
-
 
     article.isLiked = false;
     if (article.like.includes(username)) {
       article.isLiked = true;
     }
-    article.comments = comments.map(comment => {
-      comment = comment.toJSON()
-      delete comment.articleId
-      return {
-        ...comment,
-        like: comment.like.length,
-        dislike: comment.dislike.length,
-        state: username && (comment.like.includes(username) || comment.dislike.includes(username)) ? (comment.like.includes(username) ? 'liked': 'disliked') : '',
-        replies: listComments
-          .filter(replies => replies.reply ? replies.reply.id === comment.id : false)
-          .map(repl => {
-            repl = repl.toJSON()
-            delete repl.articleId
-            return {
-              ...repl, 
-              reply: repl.reply.username,
-              like: repl.like.length,
-              dislike: repl.dislike.length,
-              state: username && (repl.like.includes(username) || repl.dislike.includes(username)) ? (repl.like.includes(username) ? 'liked': 'disliked') : '',
-            }
-          })
-      }
-    })
+    article.comments = comments.map((comment) => ({
+      ...comment,
+      like: comment.like.length,
+      dislike: comment.dislike.length,
+      state: username && (comment.like.includes(username) || comment.dislike.includes(username)) ? (comment.like.includes(username) ? 'liked' : 'disliked') : '',
+      replies: listComments
+        .filter((replies) => (replies.reply ? replies.reply.id === comment.id : false))
+        .map((repl) => ({
+          ...repl,
+          reply: repl.reply.username,
+          like: repl.like.length,
+          dislike: repl.dislike.length,
+          state: username && (repl.like.includes(username) || repl.dislike.includes(username)) ? (repl.like.includes(username) ? 'liked' : 'disliked') : '',
+        })),
+    }));
 
     article.like = article.like.length;
     return h
       .response({
         error: false,
-        data: {article},
+        data: { article },
         message: 'success',
       })
       .code(200);
@@ -378,7 +376,7 @@ const updateArticle = async (request, h) => {
     return h
       .response({
         error: false,
-        data: { article },
+        data: { article: { ...article, like: article.like.length } },
         message: 'success update article',
       })
       .code(200);
@@ -482,7 +480,7 @@ const likeArticle = async (request, h) => {
 const addComment = async (request, h) => {
   try {
     const { articleId } = request.params;
-    const { text } = request.payload
+    const { text } = request.payload;
     const article = await Article.findById(articleId);
     if (!article) {
       return h
@@ -519,7 +517,7 @@ const likeComment = async (request, h) => {
   try {
     const { commentId } = request.params;
     const { payload } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded;
-    
+
     const comment = await Comment.findById(commentId).session(session);
     if (!comment) {
       return h
@@ -575,7 +573,7 @@ const dislikeComment = async (request, h) => {
   try {
     const { commentId } = request.params;
     const { payload } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded;
-    
+
     const comment = await Comment.findById(commentId).session(session);
     if (!comment) {
       return h
@@ -629,7 +627,7 @@ const commentReply = async (request, h) => {
   try {
     const { articleId, commentId } = request.params;
     const { payload } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded;
-    const comment = await Comment.findOne({articleId, _id: commentId})
+    const comment = await Comment.findOne({ articleId, _id: commentId });
     if (!comment) {
       return h
         .response({
@@ -638,15 +636,20 @@ const commentReply = async (request, h) => {
         })
         .code(404);
     }
-    const {text} = request.payload
-    const replyComment = new Comment({articleId, text, username: payload.username, reply: {id: commentId, username: comment.username}})
-    await replyComment.save()
+    const { text } = request.payload;
+    const replyComment = new Comment({
+      articleId,
+      text,
+      username: payload.username,
+      reply: { id: commentId, username: comment.username },
+    });
+    await replyComment.save();
     return h
-        .response({
-          error: false,
-          message: 'comment replied',
-        })
-        .code(200);
+      .response({
+        error: false,
+        message: 'comment replied',
+      })
+      .code(200);
   } catch (e) {
     console.error(e);
     return h
@@ -656,7 +659,7 @@ const commentReply = async (request, h) => {
       })
       .code(500);
   }
-}
+};
 
 const smallImage = async (request, h) => {
   try {
