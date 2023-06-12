@@ -1,7 +1,7 @@
 openapi: '3.0.0'
 servers:
   - description: Production
-    url: https://eduklimair-api.cyclic.app
+    url: https://eduklimair-api.up.railway.app
   - description: Development
     url: http://localhost:9000
 info:
