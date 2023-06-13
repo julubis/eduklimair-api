@@ -210,7 +210,7 @@ const getAllArticles = async (request, h) => {
     const articles = (await Article.find(query, {
       title: 1,
       content: {
-        $substr: ['$content', 0, 100],
+        $substr: ['$content', 0, 500],
       },
       category: 1,
       imageId: 1,
@@ -239,7 +239,7 @@ const getArticleById = async (request, h) => {
   try {
     const { articleId } = request.params;
     const authorized = request.headers.authorization;
-    const article = (await Article.findById(articleId)).toJSON();
+    let article = await Article.findById(articleId);
     if (!article) {
       return h
         .response({
@@ -248,7 +248,8 @@ const getArticleById = async (request, h) => {
         })
         .code(404);
     }
-    let listComments = await Comment.find({ articleId });
+    article = article.toJSON()
+    let listComments = await Comment.find({ articleId }).sort({ timestamp: -1 });
     listComments = listComments.map((comment) => {
       comment = comment.toJSON();
       delete comment.articleId;
