@@ -31,6 +31,22 @@ const errorMessages = {
   'any.required': '"{{#label}}" is required',
 };
 
+const handleError = (request, h, err) => {
+  if (err.isJoi && Array.isArray(err.details) && err.details.length > 0) {
+    return h
+      .response({
+        error: true,
+        data: null,
+        message: err.details[0],
+      })
+      .code(400)
+      .takeover();
+  }
+  return h
+    .response(err)
+    .takeover();
+}
+
 const routes = [
   {
     method: 'GET',
@@ -80,12 +96,10 @@ const routes = [
       auth: 'user',
       validate: {
         payload: Joi.object({
-          oldPassword: Joi.string().min(8).max(15).required(),
-          newPassword: Joi.string().min(8).max(15).required(),
-        }).messages(errorMessages),
-        failAction: (request, h, err) => {
-          throw err.details
-        },
+          oldPassword: Joi.string().min(8).max(15).required().messages(errorMessages),
+          newPassword: Joi.string().min(8).max(15).required().messages(errorMessages),
+        }),
+        failAction: handleError,
       },
     },
   },
@@ -97,12 +111,10 @@ const routes = [
     options: {
       validate: {
         payload: Joi.object({
-          email: Joi.string().email().required(),
-          password: Joi.string().min(8).max(15).required(),
-        }).messages(errorMessages),
-        failAction: (request, h, err) => {
-          throw err.details
-        },
+          email: Joi.string().email().required().messages(errorMessages),
+          password: Joi.string().min(8).max(15).required().messages(errorMessages),
+        }),
+        failAction: handleError,
       },
     },
   },
@@ -113,14 +125,12 @@ const routes = [
     options: {
       validate: {
         payload: Joi.object({
-          name: Joi.string().required(),
-          username: Joi.string().alphanum().required(),
-          email: Joi.string().email().required(),
-          password: Joi.string().min(8).max(15).required(),
-        }).messages(errorMessages),
-        failAction: (request, h, err) => {
-          throw err.details
-        },
+          name: Joi.string().required().messages(errorMessages),
+          username: Joi.string().alphanum().required().messages(errorMessages),
+          email: Joi.string().email().required().messages(errorMessages),
+          password: Joi.string().min(8).max(15).required().messages(errorMessages),
+        }),
+        failAction: handleError,
       },
     },
   },
@@ -149,17 +159,15 @@ const routes = [
       },
       validate: {
         payload: Joi.object({
-          title: Joi.string().required(),
+          title: Joi.string().required().messages(errorMessages),
           image: Joi.object({
-            data: Joi.binary().required(),
+            data: Joi.binary().required().messages(errorMessages),
           }),
-          source: Joi.string().required(),
-          category: Joi.string().required(),
-          content: Joi.string().required(),
-        }).messages(errorMessages),
-        failAction: (request, h, err) => {
-          throw err.details
-        },
+          source: Joi.string().required().messages(errorMessages),
+          category: Joi.string().required().messages(errorMessages),
+          content: Joi.string().required().messages(errorMessages),
+        }),
+        failAction: handleError,
       },
     },
   },
@@ -177,17 +185,15 @@ const routes = [
       },
       validate: {
         payload: Joi.object({
-          title: Joi.string().required(),
+          title: Joi.string().required().messages(errorMessages),
           image: Joi.object({
-            data: Joi.binary(),
+            data: Joi.binary().messages(errorMessages),
           }),
-          source: Joi.string().required(),
-          category: Joi.string().required(),
-          content: Joi.string().required(),
-        }).messages(errorMessages),
-        failAction: (request, h, err) => {
-          throw err.details
-        },
+          source: Joi.string().required().messages(errorMessages),
+          category: Joi.string().required().messages(errorMessages),
+          content: Joi.string().required().messages(errorMessages),
+        }),
+        failAction: handleError,
       },
     },
   },
@@ -216,11 +222,9 @@ const routes = [
       auth: 'user',
       validate: {
         payload: Joi.object({
-          text: Joi.string().required(),
-        }).messages(errorMessages),
-        failAction: (request, h, err) => {
-          throw err.details
-        },
+          text: Joi.string().required().messages(errorMessages),
+        }),
+        failAction: handleError,
       },
     },
   },
@@ -248,11 +252,9 @@ const routes = [
       auth: 'user',
       validate: {
         payload: Joi.object({
-          text: Joi.string().required(),
-        }).messages(errorMessages),
-        failAction: (request, h, err) => {
-          throw err.details
-        },
+          text: Joi.string().required().messages(errorMessages),
+        }),
+        failAction: handleError,
       },
     },
   },
