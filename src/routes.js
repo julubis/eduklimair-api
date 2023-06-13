@@ -161,7 +161,7 @@ const routes = [
         payload: Joi.object({
           title: Joi.string().required().messages(errorMessages),
           image: Joi.object({
-            data: Joi.binary().required().messages(errorMessages),
+            _data: Joi.binary().required().messages(errorMessages),
           }),
           source: Joi.string().required().messages(errorMessages),
           category: Joi.string().required().messages(errorMessages),
