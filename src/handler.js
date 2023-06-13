@@ -210,7 +210,7 @@ const getAllArticles = async (request, h) => {
     const articles = (await Article.find(query, {
       title: 1,
       content: {
-        $substr: ['$content', 0, 500],
+        $substr: ['$content', 0, 200],
       },
       category: 1,
       imageId: 1,
