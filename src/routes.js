@@ -22,13 +22,13 @@ const {
 } = require('./handler');
 
 const errorMessages = {
-  'string.base': '"{{#label}}" must be string',
-  'string.min': '"{{#label}}" must have at least {{#limit}} character',
-  'string.max': '"{{#label}}" must have maximum {{#limit}} character',
+  'string.base': '{{#label}} must be string',
+  'string.min': '{{#label}} must have minimum {#limit} character',
+  'string.max': '{{#label}} must have maximum {#limit} character',
   'string.email': 'Email invalid',
-  'string.alphanum': '"{{#label}}" must contain letters and number',
-  'any.binary': '"{{#label}}" must be file',
-  'any.required': '"{{#label}}" is required',
+  'string.alphanum': '{{#label}} must contain letters and number',
+  'any.binary': '{{#label}} must be file',
+  'any.required': '{{#label}} is required',
 };
 
 const handleError = (request, h, err) => {
@@ -37,7 +37,7 @@ const handleError = (request, h, err) => {
       .response({
         error: true,
         data: null,
-        message: err.details[0],
+        message: err.details[0].message,
       })
       .code(400)
       .takeover();
