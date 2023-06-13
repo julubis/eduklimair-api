@@ -184,7 +184,7 @@ const routes = [
       validate: {
         payload: Joi.object({
           title: Joi.string().required().messages(errorMessages),
-
+          image: Joi.object().messages(errorMessages),
           source: Joi.string().required().messages(errorMessages),
           category: Joi.string().required().messages(errorMessages),
           content: Joi.string().required().messages(errorMessages),
