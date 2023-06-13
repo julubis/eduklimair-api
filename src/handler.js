@@ -354,7 +354,7 @@ const updateArticle = async (request, h) => {
     } = request.payload;
 
     let imageId;
-    if (image._data) {
+    if (image) {
       const base = await sharp(image._data)
         .png()
         .toBuffer();
