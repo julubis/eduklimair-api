@@ -215,7 +215,7 @@ const getAllArticles = async (request, h) => {
       category: 1,
       imageId: 1,
       timestamp: 1,
-    })).map((article) => article.toJSON());
+    }).sort({ timestamp: -1 })).map((article) => article.toJSON());
 
     return h
       .response({
@@ -249,13 +249,14 @@ const getArticleById = async (request, h) => {
         .code(404);
     }
     article = article.toJSON()
-    let listComments = await Comment.find({ articleId }).sort({ timestamp: -1 });
+    let listComments = await Comment.find({ articleId });
     listComments = listComments.map((comment) => {
-      comment = comment.toJSON();
-      delete comment.articleId;
-      return comment;
+      let commentJson = comment.toJSON();
+      delete commentJson.articleId;
+      return commentJson;
     });
     const comments = listComments.filter((comment) => !comment.reply);
+    const commentReply = listComments.filter((comment) => comment.reply);
 
     let username;
     if (authorized) {
@@ -272,8 +273,8 @@ const getArticleById = async (request, h) => {
       like: comment.like.length,
       dislike: comment.dislike.length,
       state: username && (comment.like.includes(username) || comment.dislike.includes(username)) ? (comment.like.includes(username) ? 'liked' : 'disliked') : '',
-      replies: listComments
-        .filter((replies) => (replies.reply ? replies.reply.id === comment.id : false))
+      replies: commentReply
+        .filter((replies) => replies.reply.id === comment.id)
         .map((repl) => ({
           ...repl,
           reply: repl.reply.username,
