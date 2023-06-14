@@ -62,7 +62,7 @@ const comment = new mongoose.Schema({
     versionKey: false,
     transform: (doc, ret) => {
       const { _id, ...rest } = ret;
-      return { id: _id, ...rest };
+      return { id: String(_id), ...rest };
     },
   },
 });
