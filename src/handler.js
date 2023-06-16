@@ -161,6 +161,37 @@ const changePassword = async (request, h) => {
   }
 };
 
+const getUserFavorite = async (request, h) => {
+  try {
+    const { username } = JWT.token.decode(request.headers.authorization.split(' ')[1] || '').decoded.payload;
+    const articles = (await Article.find({ like: { $in: [username] } }, {
+      title: 1,
+      content: {
+        $substr: ['$content', 0, 200],
+      },
+      category: 1,
+      imageId: 1,
+      timestamp: 1,
+    }).sort({ timestamp: -1 })).map((article) => article.toJSON());
+
+    return h
+      .response({
+        error: false,
+        data: { articles },
+        message: 'success',
+      })
+      .code(200);
+  } catch (e) {
+    console.log(e);
+    return h
+      .response({
+        error: true,
+        message: 'server error',
+      })
+      .code(500);
+  }
+};
+
 const getUserPhoto = async (request, h) => {
   try {
     const { username } = request.params;
@@ -248,10 +279,10 @@ const getArticleById = async (request, h) => {
         })
         .code(404);
     }
-    article = article.toJSON()
+    article = article.toJSON();
     let listComments = await Comment.find({ articleId });
     listComments = listComments.map((comment) => {
-      let commentJson = comment.toJSON();
+      const commentJson = comment.toJSON();
       delete commentJson.articleId;
       return commentJson;
     });
@@ -499,6 +530,7 @@ const addComment = async (request, h) => {
     return h
       .response({
         error: false,
+        data: { comment },
         message: 'success',
       })
       .code(200);
@@ -529,14 +561,14 @@ const likeComment = async (request, h) => {
         })
         .code(404);
     }
-    let isLiked;
-    if (comment.like.includes(payload.username)) {
-      comment.like = comment.like.filter((username) => username !== payload.username);
-      comment.dislike = comment.dislike.filter((username) => username !== payload.username);
+    const isLiked = !comment.like.includes(payload.username);
+    comment.dislike = comment.dislike.filter((username) => username !== payload.username);
+    if (isLiked) {
+      comment.like = [...comment.like, payload.username];
     } else {
-      isLiked = true;
-      comment.like.push(payload.username);
+      comment.like = comment.like.filter((username) => username !== payload.username);
     }
+
     const commentLike = await comment.save({ session });
     await session.commitTransaction();
     if (isLiked) {
@@ -585,13 +617,12 @@ const dislikeComment = async (request, h) => {
         })
         .code(404);
     }
-    let isDisliked;
-    if (comment.dislike.includes(payload.username)) {
-      comment.like = comment.like.filter((username) => username !== payload.username);
-      comment.dislike = comment.dislike.filter((username) => username !== payload.username);
+    const isDisliked = !comment.dislike.includes(payload.username);
+    comment.like = comment.like.filter((username) => username !== payload.username);
+    if (isDisliked) {
+      comment.dislike = [...comment.dislike, payload.username];
     } else {
-      isDisliked = true;
-      comment.dislike.push(payload.username);
+      comment.dislike = comment.dislike.filter((username) => username !== payload.username);
     }
     const commentDislike = await comment.save({ session });
     await session.commitTransaction();
@@ -649,6 +680,7 @@ const commentReply = async (request, h) => {
     return h
       .response({
         error: false,
+        data: { comment: replyComment },
         message: 'comment replied',
       })
       .code(200);
@@ -747,6 +779,7 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   changePassword,
+  getUserFavorite,
   signIn,
   signUp,
   getAllArticles,

@@ -3,6 +3,7 @@ const {
   getUserProfile,
   updateUserProfile,
   changePassword,
+  getUserFavorite,
   signIn,
   signUp,
   getAllArticles,
@@ -45,7 +46,7 @@ const handleError = (request, h, err) => {
   return h
     .response(err)
     .takeover();
-}
+};
 
 const routes = [
   {
@@ -96,11 +97,22 @@ const routes = [
       auth: 'user',
       validate: {
         payload: Joi.object({
-          oldPassword: Joi.string().min(8).max(15).required().messages(errorMessages),
-          newPassword: Joi.string().min(8).max(15).required().messages(errorMessages),
+          oldPassword: Joi.string().min(8).max(15).required()
+            .messages(errorMessages),
+          newPassword: Joi.string().min(8).max(15).required()
+            .messages(errorMessages),
         }),
         failAction: handleError,
       },
+    },
+  },
+
+  {
+    method: 'GET',
+    path: '/users/favorites',
+    handler: getUserFavorite,
+    options: {
+      auth: 'user',
     },
   },
 
@@ -112,7 +124,8 @@ const routes = [
       validate: {
         payload: Joi.object({
           email: Joi.string().email().required().messages(errorMessages),
-          password: Joi.string().min(8).max(15).required().messages(errorMessages),
+          password: Joi.string().min(8).max(15).required()
+            .messages(errorMessages),
         }),
         failAction: handleError,
       },
@@ -128,7 +141,8 @@ const routes = [
           name: Joi.string().required().messages(errorMessages),
           username: Joi.string().alphanum().required().messages(errorMessages),
           email: Joi.string().email().required().messages(errorMessages),
-          password: Joi.string().min(8).max(15).required().messages(errorMessages),
+          password: Joi.string().min(8).max(15).required()
+            .messages(errorMessages),
         }),
         failAction: handleError,
       },
