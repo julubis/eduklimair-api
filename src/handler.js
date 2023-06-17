@@ -526,11 +526,18 @@ const addComment = async (request, h) => {
     const { username } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded.payload;
     const comment = new Comment({ articleId, username, text });
     await comment.save();
+    
 
     return h
       .response({
         error: false,
-        data: { comment },
+        data: { comment: {
+          ...comment.toJSON(),
+          like: 0,
+          dislike: 0,
+          state: '',
+          replies: [],
+        } },
         message: 'success',
       })
       .code(200);
@@ -680,7 +687,7 @@ const commentReply = async (request, h) => {
     return h
       .response({
         error: false,
-        data: { comment: replyComment },
+        data: { comment: {...replyComment, like: 0, dislike: 0, state: ''} },
         message: 'comment replied',
       })
       .code(200);
