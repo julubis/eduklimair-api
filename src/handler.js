@@ -687,7 +687,7 @@ const commentReply = async (request, h) => {
     return h
       .response({
         error: false,
-        data: { comment: {...replyComment, like: 0, dislike: 0, state: ''} },
+        data: { comment: {...replyComment.toJSON(), like: 0, dislike: 0, state: ''} },
         message: 'comment replied',
       })
       .code(200);
