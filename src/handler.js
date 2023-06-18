@@ -57,8 +57,9 @@ const signUp = async (request, h) => {
         message: 'email or username already exists',
       }).code(409);
     }
+    const imageId = '6475a3651880c382d20a483f';
     const newUser = new User({
-      name, username, email, password,
+      name, username, email, password, imageId,
     });
     await newUser.save();
 
@@ -121,10 +122,19 @@ const updateUserProfile = async (request, h) => {
 
     const user = (await User.findOneAndUpdate({ username }, { name, imageId }, { password: 0 }))
       .toJSON();
+    const token = JWT.token.generate(
+      {
+        name: user.name,
+        username: user.username,
+        email: user.email,
+      },
+      { key: process.env.SECRET_KEY, algorithm: 'HS256' },
+      { ttlSec: 7 * 24 * 60 * 60 }, // 1 week
+    );
     return h
       .response({
         error: false,
-        data: { user },
+        data: { user, token },
         message: 'success update profile',
       })
       .code(200);
@@ -143,7 +153,16 @@ const changePassword = async (request, h) => {
     const { oldPassword, newPassword } = request.payload;
     const { username } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded.payload;
 
-    await User.findOneAndUpdate({ username, password: oldPassword }, { password: newPassword });
+    const match = await User.findOneAndUpdate(
+      { username, password: oldPassword },
+      { password: newPassword },
+    );
+    if (!match) {
+      return h.response({
+        error: true,
+        message: 'Password wrong',
+      }).code(401);
+    }
     return h
       .response({
         error: false,
@@ -526,18 +545,19 @@ const addComment = async (request, h) => {
     const { username } = JWT.token.decode(request.headers.authorization.split(' ')[1]).decoded.payload;
     const comment = new Comment({ articleId, username, text });
     await comment.save();
-    
 
     return h
       .response({
         error: false,
-        data: { comment: {
-          ...comment.toJSON(),
-          like: 0,
-          dislike: 0,
-          state: '',
-          replies: [],
-        } },
+        data: {
+          comment: {
+            ...comment.toJSON(),
+            like: 0,
+            dislike: 0,
+            state: '',
+            replies: [],
+          },
+        },
         message: 'success',
       })
       .code(200);
@@ -687,7 +707,11 @@ const commentReply = async (request, h) => {
     return h
       .response({
         error: false,
-        data: { comment: {...replyComment.toJSON(), like: 0, dislike: 0, state: '', reply: replyComment.reply.username} },
+        data: {
+          comment: {
+            ...replyComment.toJSON(), like: 0, dislike: 0, state: '', reply: replyComment.reply.username,
+          },
+        },
         message: 'comment replied',
       })
       .code(200);

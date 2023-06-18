@@ -431,6 +431,7 @@ paths:
                 
         '400':
           description: bad input parameter
+    
     put:
       tags:
         - User
@@ -488,6 +489,23 @@ paths:
                   message:
                     type: string
 
+  /users/favorites:
+    get:
+      tags:
+        - User
+      summary: User favorite articles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                
+        '400':
+          description: bad input parameter
+    
   /users/change-password:
     put:
       tags:

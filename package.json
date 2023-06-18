@@ -22,11 +22,8 @@
     "@hapi/hapi": "^21.3.2",
     "@hapi/inert": "^7.1.0",
     "@hapi/jwt": "^3.2.0",
-    "@hapi/vision": "^7.0.1",
     "dotenv": "^16.0.3",
-    "hapi-swagger": "^16.0.1",
     "joi": "^17.9.2",
-    "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.1.2",
     "sharp": "^0.32.1"
   },
